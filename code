@@ -1,0 +1,142 @@
+ program seila
+real ro(2,2), m1(2,2), gama, K0(2,2), K1(2,2), m2(2,2), N(2,2), rot(2,2), rot2(2,2),iden(2,2),k04(4,4),k14(4,4)
+real r04(4,4),k14t(4,4),k04t(4,4),roo4(4,4)
+real inver(4,4),inver1(4,4),trans(4,4),trans1(4,4),rooo4(4,4)
+integer t
+
+open(1,file="entanglement.csv")
+t=5
+!do t = 1,1000
+gama = 1 - exp(-0.03*t)
+
+!Matriz identidade----------------------
+iden(1,1)=1
+iden(1,2)=0
+iden(2,1)=0
+iden(2,2)=1
+!Matriz rho0-----------------------------
+ro(1,1)=0.5
+ro(1,2)=0.5
+ro(2,1)=0.5
+ro(2,2)=0.5
+!Matriz k0-------------------------------
+K0(1,1) = 1
+K0(1,2) = 0
+K0(2,1) = 0
+K0(2,2) = sqrt(1-gama)
+!matriz k1-------------------------------
+K1(1,1) = 0
+K1(1,2) = sqrt(gama)
+K1(2,1) = 0
+K1(2,2) = 0
+!----------------------------------------
+write(*,*) ro(1,1), ro(1,2)
+write(*,*) ro(2,1), ro(2,2)
+write(*,*) "------"
+!----------------------------------------
+write(*,*) K0(1,1), K0(1,2)
+write(*,*) K0(2,1), K0(2,2)
+write(*,*) "------"
+!----------------------------------------
+write(*,*) K1(1,1),K1(1,2)
+write(*,*) K1(2,1),K1(2,2)
+write(*,*) "------"
+!----------------------------------------
+call transposta2 (K0,m1)
+write(*,*) m1(1,1),m1(1,2)
+write(*,*) m1(2,1),m1(2,2)
+write(*,*) "------"
+!----------------------------------------
+call transposta2 (K1,m2)
+write(*,*) m2(1,1),m2(1,2)
+write(*,*) m2(2,1),m2(2,2)
+write(*,*) "------"
+
+N = matmul(matmul(K0,ro),m1) + matmul(matmul(K1,ro),m2)
+
+call tensores(k0,iden,k04)
+call tensores(k1,iden,k14)
+call transposta(k04,k04t)
+call transposta(k14,k14t)
+call tensores(ro,ro,r04)
+
+roo4= matmul(matmul(k04,r04),k04t) + matmul(matmul(k14,r04),k14t)
+call tensores(iden,k0,inver)
+call tensores(iden,k1,inver1)
+call transposta(inver,trans)
+call transposta(inver1,trans1)
+
+rooo4=matmul(matmul(inver,roo4),trans) + matmul(matmul(inver1,roo4),trans1)
+
+!write(*,*) N(1,1),N(1,2)
+!write(*,*) N(2,1),N(2,2)
+!---------------------------------------
+write(*,*)"Matriz final"
+write(*,*)n(1,1),n(1,2)
+write(*,*)n(2,1),n(2,2)
+write(*,*)"--------"
+write(1,*) t, N(2,2)
+write(*,*) t, N(2,2)
+!write(*,*) "K04------"
+!write(*,*)k04(1,1),k04(1,2),k04(1,3),k04(1,4)
+!write(*,*)k04(2,1),k04(2,2),k04(2,3),k04(2,4)
+!write(*,*)k04(3,1),k04(3,2),k04(3,3),k04(3,4)
+!write(*,*)k04(4,1),k04(4,2),k04(4,3),k04(4,4)
+!write(*,*)"-------------"
+!write(*,*)roo4(1,1),roo4(1,2),roo4(1,3),roo4(1,4)
+!write(*,*)roo4(2,1),roo4(2,2),roo4(2,3),roo4(2,4)
+!write(*,*)roo4(3,1),roo4(3,2),roo4(3,3),roo4(4,4)
+!write(*,*)roo4(4,1),roo4(4,2),roo4(4,3),roo4(4,4)
+!write(*,*)"-------------"
+!write(*,*)rooo4(1,1),rooo4(1,2),rooo4(1,3),rooo4(1,4)
+!end do
+
+close(1)
+
+end
+
+subroutine transposta2 (m_in, m_out)
+real m_in(2,2), m_out(2,2)
+integer i,j
+    do i= 1,2
+do j= 1,2
+m_out(i,j) = m_in(j,i)
+end do
+    end do
+
+end
+
+subroutine transposta (m_in,m_out)
+real m_in(4,4), m_out(4,4)
+integer i,j
+    do i = 1,4
+do j = 1,4
+m_out(i,j) = m_in(j,i)
+end do
+    end do
+end
+
+subroutine tensores (a,b,c)
+real a(2,2), b(2,2), c(4,4)
+
+c(1,1) = a(1,1)*b(1,1)
+c(1,2) = a(1,1)*b(1,2)
+c(1,3) = a(1,2)*b(1,1)
+c(1,4) = a(1,2)*b(1,2)
+
+c(2,1) = a(1,1)*b(2,1)
+c(2,2) = a(1,1)*b(2,2)
+c(2,3) = a(1,2)*b(2,1)
+c(2,4) = a(1,2)*b(2,2)
+
+c(3,1) = a(2,1)*b(1,1)
+c(3,2) = a(2,1)*b(1,2)
+c(3,3) = a(2,2)*b(1,1)
+c(3,4) = a(2,2)*b(1,2)
+
+c(4,1) = a(2,1)*b(2,1)
+c(4,2) = a(2,1)*b(2,2)
+c(4,3) = a(2,2)*b(2,1)
+c(4,4) = a(2,2)*b(2,2)
+
+end
